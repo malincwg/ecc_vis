@@ -21,6 +21,7 @@ def viscurve(a, b):
 
 def main():
     # exec ecc implementation to generate data
+    # this is very, very, very not safe - executes anything you pass it
     if len(sys.argv) > 1:
         if os.path.isfile(sys.argv[1]):
             subprocess.call([sys.argv[1]])
@@ -54,27 +55,70 @@ def main():
         creader = csv.reader(coords, delimiter=',')
         for row in coords:
             coord = row.split(',')
-            # remove trailing newline
-            coord[1] = coord[1][:-1]
+            # remove trailing character if it exits
+            if coord[1][-1].isdigit():
+                coord[1] = coord[1][:-1]
             x_coords.append(coord[0])
             y_coords.append(coord[1])
     coords.close
 
     # read in other data from data csv
+    # data format: A, B, base point, alice pub key, bob pub key, data x, data y
+    #               encrypted x, encrypted y
     with open(dfile, 'r') as data:
         dreader = csv.reader(data, delimiter=',')
         rownum = 0
         for row in data:
-            # get curve function
+            # get curve function a and b
             if rownum == 0:
                 ab = row.split(',')
                 a = int(ab[0])
                 b = int(ab[1])
+            # get base point of curve (important for keys)
+            elif rownum == 1:
+                b = row.split(',')
+                bx = int(b[0][1:])
+                by = int(b[0][1:-2])
+            # get alice's public key
+            elif rownum == 2:
+                ak = row.split(',')
+                akx = int(ak[0][1:])
+                aky = int(ak[1][1:-2])
+            # get bob's public key
+            elif rownum == 3:
+                bk = row.split(',')
+                bkx = int(bk[0][1:])
+                bky = int(bk[1][1:-2])
+            # get cleartext data
+            elif rownum == 4:
+                clt = row.split(',')
+                cltx = clt[0]
+                clty = clt[1][:-1]
+            # get cyphertext data
+            elif rownum == 5:
+                cyt = row.split(',')
+                cytx = cyt[0]
+                cyty = cyt[1][:-1]
+            rownum += 1
 
     data.close
 
     # plot points on elliptic curve
     plt.scatter(x_coords, y_coords)
+
+    # plot some important points
+    plt.scatter(bx, by, c='k') # base point
+    plt.scatter(akx, aky, c='g') # alice's pub key
+    plt.scatter(bkx, bky, c='c') # bob's pub key
+    plt.scatter(cltx, clty, c='m') # the unencrypted data
+    plt.scatter(cytx, cyty, c='r') # the encrypted data
+
+    print("KEY:")
+    print("Black - The base point on the curve (used to generate keys)")
+    print("Green - Alice's public key")
+    print("Cyan - Bob's public key")
+    print("Magenta - Unencrypted data")
+    print("Red - Encrypted data")
 
     # does not work - output is weird
     # viscurve(a, b)
