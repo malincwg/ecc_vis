@@ -6,6 +6,6 @@ python vis.py path_to_ECC_executable [coords_csv] [data_csv]
 
 coords_csv: a csv file of coordinate pairs where the first column is x values and second column is y values. A row is a pair.
 
-data_csv: a csv file containing the elliptic curve function (for now, may include more later)
+data_csv: a csv file containing the elliptic curve a and b values, the base point on the curve, alice's public key, bob's public key, the unencrypted data point, and the encrypted data point.
 
 Dependencies for vis.py: numpy, matplotlib
