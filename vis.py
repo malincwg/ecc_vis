@@ -8,11 +8,9 @@ import sys
 x_coords = []
 y_coords = []
 
-
 # visualize a dot operation
 def visdot():
     return None
-
 
 # visualize the elliptic curve used
 def viscurve(a, b):
@@ -22,37 +20,62 @@ def viscurve(a, b):
     plt.grid()
     return None
 
-
 def main():
-    # exec ecc implementation to generate data
-    # this is very, very, very not safe - executes anything you pass it
+    # the worst argument parsing of all time
     if len(sys.argv) > 1:
         if os.path.isfile(sys.argv[1]):
-            subprocess.call([sys.argv[1]])
+            if len(sys.argv) == 4:
+                # execute ecc implementation with args
+                subprocess.call([sys.argv[1], sys.argv[2], sys.argv[3]])
+
+                # get coords file
+                if len(sys.argv) == 5:
+                    coord_file = sys.argv[4]
+                else:
+                    if os.path.isfile("coords.csv"):
+                        coord_file = "coords.csv"
+                    else:
+                        print("Please provide a .csv file containing coords")
+                        sys.exit()
+
+                # get data file
+                if len(sys.argv) == 6:
+                    data_file = sys.argv[5]
+                else:
+                    if os.path.isfile("data.csv"):
+                        data_file = "data.csv"
+                    else:
+                        print("Please provide a .csv file containing an elliptic curve function")
+                        sys.exit()
+            else:
+                # execute ecc implementation without args
+                # it is probably not safe to execute anything that gets passed
+                subprocess.call([sys.argv[1]])
+
+                # get coords file
+                if len(sys.argv) == 3:
+                    coord_file = sys.argv[2]
+                else:
+                    if os.path.isfile("coords.csv"):
+                        coord_file = "coords.csv"
+                    else:
+                        print("Please provide a .csv file containing coords")
+                        sys.exit()
+
+                # get data file
+                if len(sys.argv) == 4:
+                    data_file = sys.argv[3]
+                else:
+                    if os.path.isfile("data.csv"):
+                        data_file = "data.csv"
+                    else:
+                        print("Please provide a .csv file containing an elliptic curve function")
+                        sys.exit()
         else:
             print("Please provide path to ECC executable.")
     else:
         print("Please provide path to ECC executable.")
         sys.exit()
-
-    # set arguments
-    if len(sys.argv) == 3:
-        coord_file = sys.argv[2]
-    else:
-        if os.path.isfile("coords.csv"):
-            coord_file = "coords.csv"
-        else:
-            print("Please provide a .csv file containing coords")
-            sys.exit()
-
-    if len(sys.argv) == 4:
-        data_file = sys.argv[3]
-    else:
-        if os.path.isfile("data.csv"):
-            data_file = "data.csv"
-        else:
-            print("Please provide a .csv file containing an elliptic curve function")
-            sys.exit()
 
     # read in coords from csv file
     with open(coord_file, 'r') as coords:
@@ -104,21 +127,20 @@ def main():
     plt.scatter(x_coords, y_coords)
 
     # plot some important points
-    plt.scatter(bpx, bpy, c='k')    # base point
-    plt.scatter(akx, aky, c='g')    # alice's pub key
-    plt.scatter(bkx, bky, c='c')    # bob's pub key
-    plt.scatter(cltx, clty, c='m')  # the unencrypted data
-    plt.scatter(cytx, cyty, c='r')  # the encrypted data
+    plt.scatter(bpx, bpy, label='base point', c='y')    # base point
+    plt.scatter(akx, aky, label='alice pub key', c='g')    # alice's pub key
+    plt.scatter(bkx, bky, label='bob pub key', c='c')    # bob's pub key
+    plt.scatter(cltx, clty, label='unencrypted data', c='m')  # the unencrypted data
+    plt.scatter(cytx, cyty, label='encrypted data', c='r')  # the encrypted data
 
-    print("KEY:")
-    print("Black - The base point on the curve (used to generate keys)")
-    print("Green - Alice's public key")
-    print("Cyan - Bob's public key")
-    print("Magenta - Unencrypted data")
-    print("Red - Encrypted data")
-
+    # legend code
+    lgd = plt.legend(bbox_to_anchor=(1.05,1), loc=2, borderaxespad=0.)
+    
     # does not work - output is weird
     # viscurve(a, b)
+
+    # save visualization as image (properly displays legend)
+    plt.savefig("curve.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
 
     # display output plot
     plt.show()
